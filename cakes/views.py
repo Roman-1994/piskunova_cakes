@@ -1,17 +1,13 @@
-from django.http import JsonResponse
 from django.shortcuts import render
 
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
-from rest_framework import views
-from rest_framework.generics import RetrieveAPIView, ListAPIView
-from rest_framework.renderers import JSONRenderer
 from rest_framework import permissions
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from django_filters.rest_framework import DjangoFilterBackend
 
 from cakes.models import *
 from cakes.serializers import *
+from .service import *
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -41,11 +37,28 @@ class StorageAdditionsViewSet(viewsets.ModelViewSet):
 
 
 class DessertsViewSet(viewsets.ModelViewSet):
-    queryset = Desserts.objects.all()
+    """список десертов CRUD"""
+    queryset = Desserts.objects.filter(is_active=True)
     serializer_class = DessertsSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = DessertsFilter
+    pagination_class = DessertsPagination
 
 
 class IngredientsFoodViewSet(viewsets.ModelViewSet):
+    """список ингредиентов продуктов CRUD"""
     queryset = IngredientsFood.objects.all()
     serializer_class = IngredientsFoodSerializer
+
+
+class IngredientsAdditionsViewSet(viewsets.ModelViewSet):
+    """список ингредиентов дополнений CRUD"""
+    queryset = IngredientsAdditions.objects.all()
+    serializer_class = IngredientsAdditionsSerializer
+
+
+class DecorsViewSet(viewsets.ModelViewSet):
+    """список декоров CRUD"""
+    queryset = Decor.objects.filter(is_active=True)
+    serializer_class = DecorSerializer
 

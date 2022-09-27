@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.urls import reverse
 
 
 class StorageFood(models.Model):
@@ -61,6 +60,7 @@ class IngredientsAdditions(models.Model):
         return '%s - %s' % (self.name_addition, self.amount)
 
     class Meta:
+        """Метакласс модели ингредиенты дополнений"""
         verbose_name = 'Ингредиенты дополнений'
         ordering = ('name_addition',)
 
@@ -68,17 +68,26 @@ class IngredientsAdditions(models.Model):
 class Decor(models.Model):
     """Декор"""
     name = models.CharField(max_length=50, verbose_name='Наименование')
-    ing_food = models.ForeignKey(IngredientsFood, on_delete=models.CASCADE, verbose_name='Ингредиенты продуктов', blank=True, null=True)
-    ing_add = models.ForeignKey(IngredientsAdditions, on_delete=models.CASCADE, verbose_name='Список дополнений', blank=True, null=True)
+    ing_food = models.ForeignKey(IngredientsFood, on_delete=models.CASCADE, related_name='ing_decor_food', verbose_name='Ингредиенты продуктов', blank=True, null=True)
+    ing_add = models.ForeignKey(IngredientsAdditions, on_delete=models.CASCADE, related_name='ing_decor_add', verbose_name='Список дополнений', blank=True, null=True)
     price = models.IntegerField(default=0, verbose_name='Цена')
+    image = models.ImageField(blank=True, upload_to='media/decors/', verbose_name='Изображение')
+    is_active = models.BooleanField(default=True, db_index=True, verbose_name='Выводить в списке?')
+    created_at = models.DateTimeField(db_index=True, verbose_name='Опубликовано')
 
     def __str__(self):
         return self.name
 
+    """Функция удаления всех дополнительных изображений, при удалении записи в первичной модели"""
+    def delete(self, *args, **kwargs):
+        for ai in self.additionalimage_set.all():
+            ai.delete()
+        super().delete(*args, **kwargs)
+
     class Meta:
         verbose_name = 'Декор'
         verbose_name_plural = 'Декоры'
-        ordering = ('name', 'price')
+        ordering = ('-created_at', 'name', 'price')
 
 
 class Desserts(models.Model):
@@ -90,14 +99,34 @@ class Desserts(models.Model):
     price = models.FloatField(default=0, verbose_name='Цена')
     ing_food = models.ManyToManyField(IngredientsFood, related_name='ing_food', verbose_name='Ингредиенты продуктов')
     ing_add = models.ManyToManyField(IngredientsAdditions, related_name='ing_addinion', verbose_name='Список дополнений')
+    image = models.ImageField(blank=True, upload_to='media/desserts/', verbose_name='Изображение')
+    is_active = models.BooleanField(default=True, db_index=True, verbose_name='Выводить в списке?')
+    created_at = models.DateTimeField(db_index=True, verbose_name='Опубликовано')
 
     def __str__(self):
         return self.name
 
+    """Функция удаления всех дополнительных изображений, при удалении записи в первичной модели"""
+    def delete(self, *args, **kwargs):
+        for ai in self.additionalimage_set.all():
+            ai.delete()
+        super().delete(*args, **kwargs)
+
     class Meta:
         verbose_name = 'Десерт'
         verbose_name_plural = 'Десерты'
-        ordering = ('name', 'price')
+        ordering = ('-created_at', 'name', 'price')
+
+
+class AdditionalImage(models.Model):
+    """Модель дополнительных изображений"""
+    dessert = models.ForeignKey(Desserts, on_delete=models.CASCADE, verbose_name='Десерт', blank=True, null=True)
+    decor = models.ForeignKey(Decor, on_delete=models.CASCADE, verbose_name='Декор', blank=True, null=True)
+    image = models.ImageField(upload_to='media/add_img/', verbose_name='Изображение')
+
+    class Meta:
+        verbose_name_plural = 'Дополнительные иллюстрации'
+        verbose_name = 'Дополнительная иллюстрация'
 
 
 class Orders(models.Model):
