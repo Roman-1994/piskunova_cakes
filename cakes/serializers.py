@@ -19,16 +19,32 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 
 class StorageFoodSerializer(serializers.ModelSerializer):
     """Сериализатор склада продуктов"""
+    message_food = serializers.SerializerMethodField()
+
     class Meta:
         model = StorageFood
         fields = '__all__'
 
+    def get_message_food(self, obj):
+        if int(obj.min_amount) >= int(obj.amount):
+            return str('Необходимо докупить')
+        else:
+            return str('Докупать не требуется')
+
 
 class StorageAdditionsSerializer(serializers.ModelSerializer):
     """Сериализатор склада дополнений"""
+    message_additions = serializers.SerializerMethodField()
+
     class Meta:
         model = StorageAdditions
         fields = '__all__'
+
+    def get_message_additions(self, obj):
+        if int(obj.min_amount) >= int(obj.amount):
+            return str('Необходимо докупить')
+        else:
+            return str('Докупать не требуется')
 
 
 class IngredientsFoodSerializer(serializers.ModelSerializer):
@@ -87,3 +103,8 @@ class DecorSerializer(serializers.ModelSerializer):
             price_add = int(obj.ing_add.price)
         return price_food + price_add
 
+
+class OrdersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Orders
+        fields = '__all__'

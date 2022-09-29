@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from datetime import datetime
 
 
 class StorageFood(models.Model):
@@ -8,6 +9,7 @@ class StorageFood(models.Model):
     amount = models.IntegerField(verbose_name='Количество')
     unit_measure = models.CharField(max_length=10, verbose_name='Единица измерения')
     price = models.IntegerField(default=0, verbose_name='Цена')
+    min_amount = models.IntegerField(default=0, verbose_name='Минимально необходимое количество')
 
     def __str__(self):
         return self.name
@@ -23,6 +25,7 @@ class StorageAdditions(models.Model):
     amount = models.IntegerField(verbose_name='Количество')
     unit_measure = models.CharField(max_length=10, verbose_name='Единица измерения')
     price = models.IntegerField(default=0, verbose_name='Цена')
+    min_amount = models.IntegerField(default=0, verbose_name='Минимально необходимое количество')
 
     def __str__(self):
         return self.name
@@ -78,8 +81,8 @@ class Decor(models.Model):
     def __str__(self):
         return self.name
 
-    """Функция удаления всех дополнительных изображений, при удалении записи в первичной модели"""
     def delete(self, *args, **kwargs):
+        """Функция удаления всех дополнительных изображений, при удалении записи в первичной модели"""
         for ai in self.additionalimage_set.all():
             ai.delete()
         super().delete(*args, **kwargs)
@@ -106,8 +109,8 @@ class Desserts(models.Model):
     def __str__(self):
         return self.name
 
-    """Функция удаления всех дополнительных изображений, при удалении записи в первичной модели"""
     def delete(self, *args, **kwargs):
+        """Функция удаления всех дополнительных изображений, при удалении записи в первичной модели"""
         for ai in self.additionalimage_set.all():
             ai.delete()
         super().delete(*args, **kwargs)
@@ -131,9 +134,73 @@ class AdditionalImage(models.Model):
 
 class Orders(models.Model):
     """Заказы"""
-    dessert = models.ForeignKey(Desserts, on_delete=models.PROTECT, verbose_name='Наменование')
-    add_wishes = models.TextField(max_length=5000, verbose_name='Дополнительные пожелания')
-    сustomer = models.ForeignKey(User, on_delete=models.SET('Заказчик'), verbose_name='Заказчик')
-    phone = models.CharField(max_length=11, default='-', verbose_name='Телефон')
-    self_service = models.BooleanField(default=False, verbose_name='Самовывоз', help_text='Адрес смотрите в разделе контакты')
-    delivery = models.TextField(max_length=500, verbose_name='Адрес доставки', help_text='Если вы выбрали сомовывоз, напишите в этом окне время когда вы приедете за заказом')
+    DESSERTS = (
+        (None, 'Выберите десерт'),
+        ('Торт', (
+            ('Pie_1,5_kg', 'Торт - 1,5 кг'),
+            ('Pie_2_kg', 'Торт - 2 кг'),
+            ('Pie_2,5_kg', 'Торт - 2,5 кг'),
+            ('Pie_3_kg', 'Торт - 3 кг'),
+            ('Pie_3,5_kg', 'Торт - 3,5 кг'),
+            ('Pie_4_kg', 'Торт - 4 кг'),
+            ('Pie_4,5_kg', 'Торт - 4,5 кг'),
+            ('Pie_5_kg', 'Торт - 5 кг'),
+            ('Pie_5,5_kg', 'Торт - 5,5 кг'),
+            ('Pie_6_kg', 'Торт - 6 кг'),
+        )),
+        ('Бенто торт', (
+            ('Bento_рie_550_gr', 'Бенто торт - ~550 гр'),
+            ('Big_bento_pie_800_gr', 'BIG бенто торт - ~800 гр'),
+        )),
+        ('Капкейки', (
+            ('Cupcakes_6_grand_650_gr', 'Капкейки(6 шт.) - ~650 гр'),
+            ('Cupcakes_9_grand_950_gr', 'Капкейки(9 шт.) - ~950 гр'),
+            ('Cupcakes_12_grand_1300_gr', 'Капкейки(12 шт.) - ~1300 гр'),
+        )),
+        ('Трайфлы', (
+            ('Trifles_4_grand_800_gr', 'Капкейки(4 шт.) - ~800 гр'),
+            ('Trifles_6_grand_1200_gr', 'Капкейки(6 шт.) - ~1200 гр'),
+            ('Trifles_9_grand_1800_gr', 'Капкейки(9 шт.) - ~1800 гр'),
+            ('Trifles_12_grand_2400_gr', 'Капкейки(12 шт.) - ~2400 гр'),
+        )),
+        ('Кейк попсы в виде сердца', (
+            ('Cake_pop_heart_4_grand_600_gr', 'Кейк попсы(4 шт.) - ~600 гр'),
+            ('Cake_pop_heart_6_grand_900_gr', 'Кейк попсы(6 шт.) - ~900 гр'),
+            ('Cake_pop_heart_9_grand_1350_gr', 'Кейк попсы(9 шт.) - ~1350 гр'),
+            ('Cake_pop_heart_12_grand_1800_gr', 'Кейк попсы(12 шт.) - ~1800 гр'),
+        )),
+        ('Набор (бенто торт или BIG бенто торт + капкейки (5 шт.) или трайфлы (5 шт.))', (
+            ('Bento_рie + cupcakes', 'Бенто торт + капкейки'),
+            ('Bento_рie + trifles', 'Бенто торт + трайфлы'),
+            ('Big_bento_pie + cupcakes', 'BIG бенто торт + капкейки'),
+            ('Big_bento_pie + trifles', 'BIG бенто торт + трайфлы'),
+        )),
+    )
+
+    FILLING = (
+        (None, 'Выберите начинку'),
+        ('Raspberry', 'Малина'),
+        ('Cherry', 'Вишня'),
+        ('Snickers', 'Сникерс'),
+    )
+
+    dessert = models.CharField(max_length=50, choices=DESSERTS, verbose_name='Наменование', default='Выберите десерт')
+    filling = models.CharField(max_length=50, choices=FILLING, verbose_name='Начинка', default='Выберите начинку')
+    img_decor = models.ImageField(upload_to='orders', verbose_name='Изображение декора', default='-')
+    add_wishes = models.TextField(max_length=5000, verbose_name='Дополнительные пожелания', blank=True, null=True)
+    customer = models.ForeignKey(User, on_delete=models.SET('Заказчик'), verbose_name='Заказчик')
+    phone = models.CharField(max_length=11, verbose_name='Телефон')
+    self_service = models.BooleanField(default=False, verbose_name='Самовывоз?', help_text='Адрес кондитера смотрите в разделе контакты')
+    delivery = models.TextField(max_length=500, verbose_name='Адрес доставки', blank=True, null=True, help_text='Данное поле заполняется только если вам нужна доставка, а не самовывоз')
+    datetime_delivery = models.DateTimeField(db_index=True, verbose_name='Дата и время доставки или самовывоза', blank=True, null=True)
+    created_at = models.DateTimeField(db_index=True, verbose_name='Дата заказа', default=datetime.today)
+
+    def __str__(self):
+        return '%s - %s' % (self.dessert, self.filling)
+
+    class Meta:
+        verbose_name = 'Заказ'
+        verbose_name_plural = 'Заказы'
+        ordering = ('-created_at',)
+
+

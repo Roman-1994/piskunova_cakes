@@ -26,13 +26,13 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 class StorageFoodViewSet(viewsets.ModelViewSet):
     """список продуктов CRUD"""
-    queryset = Group.objects.all()
+    queryset = StorageFood.objects.all()
     serializer_class = StorageFoodSerializer
 
 
 class StorageAdditionsViewSet(viewsets.ModelViewSet):
     """список продуктов CRUD"""
-    queryset = Group.objects.all()
+    queryset = StorageAdditions.objects.all()
     serializer_class = StorageAdditionsSerializer
 
 
@@ -62,3 +62,8 @@ class DecorsViewSet(viewsets.ModelViewSet):
     queryset = Decor.objects.filter(is_active=True)
     serializer_class = DecorSerializer
 
+
+class OrdersViewSet(viewsets.ModelViewSet):
+    """список заказов CRUD"""
+    queryset = Orders.objects.all()
+    serializer_class = OrdersSerializer
