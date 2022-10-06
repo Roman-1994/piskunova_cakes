@@ -87,6 +87,14 @@ class Decor(models.Model):
             ai.delete()
         super().delete(*args, **kwargs)
 
+    def save(self, *args, **kwargs):
+        """Вычитание из склада продуктов и дополнений ингредиентов"""
+        self.ing_food.name_food.amount -= self.ing_food.amount
+        self.ing_food.name_food.save()
+        self.ing_add.name_addition.amount -= self.ing_add.amount
+        self.ing_add.name_addition.save()
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = 'Декор'
         verbose_name_plural = 'Декоры'
@@ -115,10 +123,24 @@ class Desserts(models.Model):
             ai.delete()
         super().delete(*args, **kwargs)
 
+    def save(self, *args, **kwargs):
+        """Вычитание из склада продуктов и дополнений ингредиентов"""
+        for f in self.ing_food.all():
+            f.name_food.amount -= f.amount
+            f.name_food.save()
+        for a in self.ing_add.all():
+            a.name_addition.amount -= a.amount
+            a.name_addition.save()
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = 'Десерт'
         verbose_name_plural = 'Десерты'
         ordering = ('-created_at', 'name', 'price')
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('desserts_detail', kwargs={'pk': self.pk})
 
 
 class AdditionalImage(models.Model):
@@ -203,4 +225,39 @@ class Orders(models.Model):
         verbose_name_plural = 'Заказы'
         ordering = ('-created_at',)
 
+
+class Comment(models.Model):
+    """Модель комментариев десертов"""
+    dessert = models.ForeignKey(Desserts, on_delete=models.CASCADE, verbose_name='Десерт', related_name='comments')
+    parent = models.ForeignKey('self', verbose_name='Родитель', on_delete=models.CASCADE, blank=True, null=True, related_name='children')
+    author = models.CharField(max_length=50, verbose_name='Автор')
+    content = models.TextField(max_length=1000, verbose_name='Содержание')
+    is_active = models.BooleanField(default=True, db_index=True, verbose_name='Выводить на экран?')
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Опубликован')
+
+    def __str__(self):
+        return '%s - %s' % (self.dessert, self.author)
+
+    class Meta:
+        verbose_name = 'Комментарий десерта'
+        verbose_name_plural = 'Комментарии десертов'
+        ordering = ('dessert', '-created_at')
+
+
+class CommentDecor(models.Model):
+    """Модель комментариев декоров"""
+    decor = models.ForeignKey(Decor, on_delete=models.CASCADE, verbose_name='Декор', related_name='comments_decor')
+    parent = models.ForeignKey('self', verbose_name='Родитель', on_delete=models.CASCADE, blank=True, null=True, related_name='children')
+    author = models.CharField(max_length=50, verbose_name='Автор')
+    content = models.TextField(max_length=1000, verbose_name='Содержание')
+    is_active = models.BooleanField(default=True, db_index=True, verbose_name='Выводить на экран?')
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Опубликован')
+
+    def __str__(self):
+        return '%s - %s' % (self.decor, self.author)
+
+    class Meta:
+        verbose_name = 'Комментарий декора'
+        verbose_name_plural = 'Комментарии декоров'
+        ordering = ('decor', '-created_at')
 

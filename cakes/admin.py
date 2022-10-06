@@ -15,22 +15,35 @@ class StorageAdditionsAdmin(admin.ModelAdmin):
 
 
 class AdditionalImageAdmin(admin.TabularInline):
-    """Дополнение к админкам декоров и десертов"""
+    """Дополнительные изображения к админкам декоров и десертов"""
     model = AdditionalImage
+    extra = 2
+
+
+class CommentInlineAdmin(admin.TabularInline):
+    """Дополнение комментариев к админке десертов"""
+    model = Comment
+    extra = 1
 
 
 class DessertsAdmin(admin.ModelAdmin):
     """Админка десертов"""
     list_display = ('name', 'amount', 'weight', 'price')
     fields = ('name', 'decor', 'amount', 'weight', 'price', 'ing_food', 'ing_add', 'image', 'is_active', 'created_at')
-    inlines = (AdditionalImageAdmin,)
+    inlines = (AdditionalImageAdmin, CommentInlineAdmin)
+
+
+class CommentDecorInlineAdmin(admin.TabularInline):
+    """Дополнение комментариев к админке декоров"""
+    model = CommentDecor
+    extra = 1
 
 
 class DecorAdmin(admin.ModelAdmin):
     """Админка декоров"""
     list_display = ('name', 'price')
     fields = ('name', 'price', 'ing_food', 'ing_add', 'image', 'is_active', 'created_at')
-    inlines = (AdditionalImageAdmin,)
+    inlines = (AdditionalImageAdmin,  CommentDecorInlineAdmin)
 
 
 class IngredientsFoodAdmin(admin.ModelAdmin):
@@ -48,6 +61,18 @@ class OrdersAdmin(admin.ModelAdmin):
     fields = ('dessert', 'filling', 'img_decor', 'add_wishes', 'customer', 'phone', 'self_service', 'delivery', 'datetime_delivery', 'created_at')
 
 
+class CommentAdmin(admin.ModelAdmin):
+    """Админка комментариев десертов"""
+    list_display = ('dessert', 'parent', 'author', 'created_at')
+    fields = ('dessert', 'parent', 'author', 'content', 'is_active')
+
+
+class CommentDecorAdmin(admin.ModelAdmin):
+    """Админка комментариев декоров"""
+    list_display = ('decor', 'parent', 'author', 'created_at')
+    fields = ('decor', 'parent', 'author', 'content', 'is_active')
+
+
 admin.site.register(StorageFood, StorageFoodAdmin)
 admin.site.register(StorageAdditions, StorageAdditionsAdmin)
 admin.site.register(Desserts, DessertsAdmin)
@@ -55,4 +80,6 @@ admin.site.register(Decor, DecorAdmin)
 admin.site.register(IngredientsFood, IngredientsFoodAdmin)
 admin.site.register(IngredientsAdditions, IngredientsAdditionsAdmin)
 admin.site.register(Orders, OrdersAdmin)
+admin.site.register(Comment, CommentAdmin)
+admin.site.register(CommentDecor, CommentDecorAdmin)
 
