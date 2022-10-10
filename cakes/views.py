@@ -1,6 +1,3 @@
-from django.shortcuts import render
-
-from django.contrib.auth.models import User, Group
 from rest_framework import viewsets, generics
 from rest_framework import permissions
 from django_filters.rest_framework import DjangoFilterBackend
@@ -11,6 +8,10 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from cakes.models import *
 from cakes.serializers import *
 from .service import *
+
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from dj_rest_auth.registration.views import SocialLoginView
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -76,17 +77,18 @@ class DecorsListView(generics.ListAPIView):
     """Вывод списка декоров"""
     queryset = Decor.objects.filter(is_active=True)
     serializer_class = DecorListSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class DecorsDetailView(generics.RetrieveAPIView):
     """Вывод декора"""
     queryset = Decor.objects.filter(is_active=True)
     serializer_class = DecorDetailSerializer
+    permission_classes = [permissions.AllowAny]
 
 
-class OrdersViewSet(viewsets.ModelViewSet):
-    """список заказов CRUD"""
-    queryset = Orders.objects.all()
+class OrdersCreateView(generics.CreateAPIView):
+    """Создание нового заказа"""
     serializer_class = OrdersSerializer
 
 
@@ -120,3 +122,13 @@ def comments_decor(request, pk):
         comments = CommentDecor.objects.filter(is_active=True, decor=pk, parent=None)
         serializer = CommentDecorSerializer(comments, many=True)
         return Response(serializer.data)
+
+
+#class GoogleLogin(SocialLoginView): # if you want to use Authorization Code Grant, use this
+    #adapter_class = GoogleOAuth2Adapter
+    #callback_url = CALLBACK_URL_YOU_SET_ON_GOOGLE
+    #client_class = OAuth2Client
+
+
+class GoogleLogin(SocialLoginView): # if you want to use Implicit Grant, use this
+    adapter_class = GoogleOAuth2Adapter
