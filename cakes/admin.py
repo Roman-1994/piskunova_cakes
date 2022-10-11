@@ -73,6 +73,12 @@ class CommentDecorAdmin(admin.ModelAdmin):
     fields = ('decor', 'parent', 'author', 'content', 'is_active')
 
 
+class RatingAdmin(admin.ModelAdmin):
+    """Админка рейтинга"""
+    list_display = ('__str__', )
+    fields = ('ip', 'star', 'dessert')
+
+
 admin.site.register(StorageFood, StorageFoodAdmin)
 admin.site.register(StorageAdditions, StorageAdditionsAdmin)
 admin.site.register(Desserts, DessertsAdmin)
@@ -82,4 +88,4 @@ admin.site.register(IngredientsAdditions, IngredientsAdditionsAdmin)
 admin.site.register(Orders, OrdersAdmin)
 admin.site.register(Comment, CommentAdmin)
 admin.site.register(CommentDecor, CommentDecorAdmin)
-
+admin.site.register(Rating, RatingAdmin)

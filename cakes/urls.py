@@ -12,6 +12,7 @@ urlpatterns = [
     path('desserts/', views.DessertsListView.as_view()),
     path('desserts/<int:pk>/', views.DessertsDetailView.as_view(), name='desserts_detail'),
     path('desserts/<int:pk>/comments/', views.comments),
+    path('desserts/<int:pk>/comments/rating/', views.AddRatingView.as_view()),
     path('decors/', views.DecorsListView.as_view()),
     path('decors/<int:pk>/', views.DecorsDetailView.as_view(), name='decors_detail'),
     path('decors/<int:pk>/comments/', views.comments_decor),

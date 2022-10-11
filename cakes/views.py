@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from rest_framework.views import APIView
 
 from cakes.models import *
 from cakes.serializers import *
@@ -78,6 +79,9 @@ class DecorsListView(generics.ListAPIView):
     queryset = Decor.objects.filter(is_active=True)
     serializer_class = DecorListSerializer
     permission_classes = [permissions.AllowAny]
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = DecorsFilter
+
 
 
 class DecorsDetailView(generics.RetrieveAPIView):
@@ -132,3 +136,33 @@ def comments_decor(request, pk):
 
 class GoogleLogin(SocialLoginView): # if you want to use Implicit Grant, use this
     adapter_class = GoogleOAuth2Adapter
+
+
+class AddRatingView(APIView):
+    """Добаление рейтинга к десерту"""
+    def get_client_ip(self, request):
+        """Ip адрес автора рейтинга"""
+        x_forwarder_for = request.META.get('HTTP_X_FORWARDER_FOR')
+        if x_forwarder_for:
+            ip = x_forwarder_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+    def get_dessert_id(self, request):
+        """Id десерта"""
+        dessert = request.path
+        d = ''
+        for i in dessert:
+            if i.isdigit():
+                d += i
+        return Desserts.objects.get(id=int(d))
+
+    def post(self, request, *args, **kwargs):
+        serializers = RatingSerializer(data=request.data)
+        if serializers.is_valid():
+            serializers.save(ip=self.get_client_ip(request), dessert=self.get_dessert_id(request))
+            return Response(status=201)
+        else:
+            return Response(status=400)
+

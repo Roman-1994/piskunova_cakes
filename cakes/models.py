@@ -261,3 +261,27 @@ class CommentDecor(models.Model):
         verbose_name_plural = 'Комментарии декоров'
         ordering = ('decor', '-created_at')
 
+
+class Rating(models.Model):
+    """Модель рейтинга"""
+    STAR = (
+        (None, 'Выберите рейтинг'),
+        ('0', '0'),
+        ('1', '1'),
+        ('2', '2'),
+        ('3', '3'),
+        ('4', '4'),
+        ('5', '5'),
+    )
+
+    ip = models.CharField('IP адрес', max_length=15)
+    star = models.CharField(max_length=2, choices=STAR, verbose_name='Звезда')
+    dessert = models.ForeignKey('Desserts', on_delete=models.CASCADE, verbose_name='Десерт')
+
+    def __str__(self):
+        return f'{self.star} - {self.dessert}'
+
+    class Meta:
+        verbose_name = 'Рейтинг'
+        verbose_name_plural = 'Рейтинги'
+

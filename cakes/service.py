@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 from rest_framework.pagination import PageNumberPagination
-from .models import Desserts
+from .models import Desserts, Decor
 
 
 class DessertsPagination(PageNumberPagination):
@@ -8,17 +8,29 @@ class DessertsPagination(PageNumberPagination):
     page_size = 2
 
 
-class CharFilterInFilter(filters.BaseInFilter, filters.CharFilter):
-    pass
-
-
 class DessertsFilter(filters.FilterSet):
     """Фильтр десертов"""
-    name = CharFilterInFilter(field_name='name', lookup_expr='in')
-    decor = CharFilterInFilter(field_name='decor__name', lookup_expr='in')
+    name = filters.CharFilter(lookup_expr='icontains')
+    decor__name = filters.CharFilter(lookup_expr='icontains')
     price = filters.RangeFilter()
+    ing_food__name_food__name = filters.CharFilter(lookup_expr='icontains')
+    ing_add__name_addition__name = filters.CharFilter(lookup_expr='icontains')
 
     class Meta:
         model = Desserts
-        fields = ['name', 'decor', 'price']
+        fields = ['name', 'decor', 'price', 'ing_food', 'ing_add']
+
+
+class DecorsFilter(filters.FilterSet):
+    """Фильтр декоров"""
+    name = filters.CharFilter(lookup_expr='icontains')
+
+    price = filters.RangeFilter()
+
+    ing_food__name_food__name = filters.CharFilter(lookup_expr='icontains')
+    ing_add__name_addition__name = filters.CharFilter(lookup_expr='icontains')
+
+    class Meta:
+        model = Decor
+        fields = ['name', 'price', 'ing_food', 'ing_add']
 

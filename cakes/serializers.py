@@ -203,3 +203,19 @@ class DessertsDetailSerializer(serializers.ModelSerializer):
                 price_decor_add = int(obj.decor.ing_add.price)
             price_decor = price_decor_food + price_decor_add
         return price_food + price_add + price_decor
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    """Сериализатор рейтинга"""
+    class Meta:
+        model = Rating
+        fields = ('star', )
+
+    def create(self, validated_data):
+        rating = Rating.objects.update_or_create(
+            ip=validated_data.get('ip', None),
+            dessert=validated_data.get('dessert', None),
+            defaults={'star': validated_data.get('star')}
+        )
+        return rating
+
