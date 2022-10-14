@@ -104,7 +104,7 @@ class Decor(models.Model):
 class Desserts(models.Model):
     """Десерты"""
     name = models.CharField(max_length=50, verbose_name='Название')
-    decor = models.ForeignKey(Decor, on_delete=models.DO_NOTHING, verbose_name='Декор', blank=True, null=True)
+    decor = models.ForeignKey(Decor, on_delete=models.DO_NOTHING, related_name='des_decor', verbose_name='Декор', blank=True, null=True)
     amount = models.PositiveIntegerField(default=0, verbose_name='Количество')
     weight = models.FloatField(default=0, verbose_name='Вес')
     price = models.FloatField(default=0, verbose_name='Цена')
@@ -145,8 +145,8 @@ class Desserts(models.Model):
 
 class AdditionalImage(models.Model):
     """Модель дополнительных изображений"""
-    dessert = models.ForeignKey(Desserts, on_delete=models.CASCADE, verbose_name='Десерт', blank=True, null=True)
-    decor = models.ForeignKey(Decor, on_delete=models.CASCADE, verbose_name='Декор', blank=True, null=True)
+    dessert = models.ForeignKey(Desserts, on_delete=models.CASCADE, verbose_name='Десерт', related_name='add_img_des', blank=True, null=True)
+    decor = models.ForeignKey(Decor, on_delete=models.CASCADE, verbose_name='Декор', related_name='add_img_dec', blank=True, null=True)
     image = models.ImageField(upload_to='media/add_img/', verbose_name='Изображение')
 
     class Meta:
@@ -266,16 +266,16 @@ class Rating(models.Model):
     """Модель рейтинга"""
     STAR = (
         (None, 'Выберите рейтинг'),
-        ('0', '0'),
-        ('1', '1'),
-        ('2', '2'),
-        ('3', '3'),
-        ('4', '4'),
-        ('5', '5'),
+        (0, 0),
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+        (5, 5),
     )
 
     ip = models.CharField('IP адрес', max_length=15)
-    star = models.CharField(max_length=2, choices=STAR, verbose_name='Звезда')
+    star = models.IntegerField(choices=STAR, verbose_name='Звезда')
     dessert = models.ForeignKey('Desserts', on_delete=models.CASCADE, verbose_name='Десерт')
 
     def __str__(self):
@@ -284,4 +284,14 @@ class Rating(models.Model):
     class Meta:
         verbose_name = 'Рейтинг'
         verbose_name_plural = 'Рейтинги'
+
+
+class Profit(models.Model):
+    """Модель прибыли"""
+    start_period = models.DateField(default=datetime.today, verbose_name='Начало периода')
+    end_period = models.DateField(default=datetime.today, verbose_name='Конец периода')
+
+    class Meta:
+        verbose_name = 'Прибыль'
+        verbose_name_plural = 'Прибыли'
 

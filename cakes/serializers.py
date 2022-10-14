@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from cakes.models import *
+from django.db.models import Sum, Count
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -111,6 +112,7 @@ class DecorListSerializer(serializers.ModelSerializer):
 class DecorDetailSerializer(serializers.ModelSerializer):
     """Сериализатор декора"""
     cost_price_decor = serializers.SerializerMethodField()
+    add_img_dec = serializers.SerializerMethodField()
     comments_decor = CommentDecorSerializer(many=True, read_only=True)
 
     class Meta:
@@ -126,6 +128,13 @@ class DecorDetailSerializer(serializers.ModelSerializer):
         if obj.ing_add:
             price_add = int(obj.ing_add.price)
         return price_food + price_add
+
+    def get_add_img_dec(self, obj):
+        add_img = obj.add_img_dec.all()
+        res = []
+        for i in add_img:
+            res.append(f'http://127.0.0.1:8000/media/{i.image}')
+        return res
 
 
 class OrdersSerializer(serializers.ModelSerializer):
@@ -166,10 +175,11 @@ class CommentSerializer(serializers.ModelSerializer):
 class DessertsListSerializer(serializers.ModelSerializer):
     """Сериализатор десертов"""
     comments = serializers.SerializerMethodField(read_only=True)
+    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Desserts
-        fields = ('name', 'image', 'price', 'comments')
+        fields = ('name', 'image', 'price', 'comments', 'rating')
 
     def get_comments(self, obj):
         """Вывод последнего комментария"""
@@ -179,10 +189,23 @@ class DessertsListSerializer(serializers.ModelSerializer):
             comment = str(comment_list[0].author) + '-' + str(comment_list[0].content)
         return comment
 
+    def get_rating(self, obj):
+        """Функция нахождения среднего рейтинга"""
+        rating = 0
+        if obj.rating_set.all():
+            rating_sum = obj.rating_set.all().aggregate(Sum('star'))
+            rating_count = obj.rating_set.all().aggregate(Count('star'))
+            rating = rating_sum['star__sum'] / rating_count['star__count']
+            return rating
+        return rating
+
 
 class DessertsDetailSerializer(serializers.ModelSerializer):
     """Сериализатор десерта"""
     cost_price = serializers.SerializerMethodField()
+    add_img_des = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField(read_only=True)
+
     comments = CommentSerializer(many=True, read_only=True)
 
     class Meta:
@@ -203,6 +226,23 @@ class DessertsDetailSerializer(serializers.ModelSerializer):
                 price_decor_add = int(obj.decor.ing_add.price)
             price_decor = price_decor_food + price_decor_add
         return price_food + price_add + price_decor
+
+    def get_rating(self, obj):
+        """Функция нахождения среднего рейтинга"""
+        rating = 0
+        if obj.rating_set.all():
+            rating_sum = obj.rating_set.all().aggregate(Sum('star'))
+            rating_count = obj.rating_set.all().aggregate(Count('star'))
+            rating = rating_sum['star__sum'] / rating_count['star__count']
+            return rating
+        return rating
+
+    def get_add_img_des(self, obj):
+        add_img = obj.add_img_des.all()
+        res = []
+        for i in add_img:
+            res.append(f'http://127.0.0.1:8000/media/{i.image}')
+        return res
 
 
 class RatingSerializer(serializers.ModelSerializer):
