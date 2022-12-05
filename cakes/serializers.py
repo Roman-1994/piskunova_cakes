@@ -179,14 +179,14 @@ class DessertsListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Desserts
-        fields = ('name', 'image', 'price', 'comments', 'rating')
+        fields = ('id', 'name', 'image', 'price', 'comments', 'rating')
 
     def get_comments(self, obj):
         """Вывод последнего комментария"""
         comment = 'Комментариев нет'
         if obj.comments.all():
             comment_list = [i for i in obj.comments.all()]
-            comment = str(comment_list[0].author) + '-' + str(comment_list[0].content)
+            comment = str(comment_list[0].author) + '-' + str(comment_list[0].content) + ', дата отзыва: ' + str(comment_list[0].created_at.strftime("%d-%m-%y %H:%M"))
         return comment
 
     def get_rating(self, obj):
@@ -205,12 +205,14 @@ class DessertsDetailSerializer(serializers.ModelSerializer):
     cost_price = serializers.SerializerMethodField()
     add_img_des = serializers.SerializerMethodField()
     rating = serializers.SerializerMethodField(read_only=True)
+    decor = serializers.SlugRelatedField(slug_field='name', read_only=True)
 
     comments = CommentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Desserts
-        exclude = ('is_active', )
+        #exclude = ('is_active', )
+        fields = ('name', 'decor', 'amount', 'weight', 'price', 'ing_food', 'ing_add', 'image', 'created_at', 'cost_price', 'add_img_des', 'rating', 'comments')
 
     def get_cost_price(self, obj):
         """Функция нахождения себестоимости десерта"""
@@ -259,3 +261,7 @@ class RatingSerializer(serializers.ModelSerializer):
         )
         return rating
 
+
+class ProfitSerializer(serializers.Serializer):
+    date_start = serializers.DateField()
+    date_end = serializers.DateField()

@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'social_django',
     'rest_framework_social_oauth2',
     'drf_yasg',
+    'corsheaders',
 
     'cakes.apps.CakesConfig',
 ]
@@ -62,6 +63,7 @@ SITE_ID = 1
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -130,11 +132,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
-USE_I18N = True
-
+USE_I18N = False
+USE_L10N = True
 USE_TZ = True
+
+DATETIME_FORMAT = ['%Y-%m-%d %H:%M']
+DATETIME_INPUT_FORMATS = ['%Y-%m-%d %H:%M']
 
 
 # Static files (CSS, JavaScript, Images)
@@ -154,8 +159,8 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
 
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5,
+    #'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    #'PAGE_SIZE': 5,
 
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 
@@ -178,7 +183,12 @@ SOCIAL_AUTH_VK_OAUTH2_KEY = '51443574'
 SOCIAL_AUTH_VK_OAUTH2_SECRET = 'WyniKsTNvkiiqB3Xj4Jr'
 
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.vk.VKOAuth2',
-    'rest_framework_social_oauth2.backends.DjangoOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-)
+     'social_core.backends.vk.VKOAuth2',
+     #'rest_framework_social_oauth2.backends.DjangoOAuth2',
+     'django.contrib.auth.backends.ModelBackend',
+ )
+
+CORS_ORIGIN_WHITELIST = [
+    'http://127.0.0.1:4200',
+    'http://localhost:4200',
+]

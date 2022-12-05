@@ -33,14 +33,14 @@ class StorageFoodListCreateView(generics.ListCreateAPIView):
     """Вывод списка продуктов"""
     queryset = StorageFood.objects.all()
     serializer_class = StorageFoodSerializer
-    permission_classes = [permissions.IsAdminUser]
+    #permission_classes = [permissions.IsAdminUser]
 
 
 class StorageAdditionsListCreateView(generics.ListCreateAPIView):
     """Вывод списка дополнений"""
     queryset = StorageAdditions.objects.all()
     serializer_class = StorageAdditionsSerializer
-    permission_classes = [permissions.IsAdminUser]
+    #permission_classes = [permissions.IsAdminUser]
 
 
 class DessertsListView(generics.ListAPIView):
@@ -49,7 +49,7 @@ class DessertsListView(generics.ListAPIView):
     serializer_class = DessertsListSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = DessertsFilter
-    pagination_class = DessertsPagination
+    #pagination_class = DessertsPagination
     permission_classes = [permissions.AllowAny]
 
 
@@ -81,7 +81,6 @@ class DecorsListView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = DecorsFilter
-
 
 
 class DecorsDetailView(generics.RetrieveAPIView):
@@ -166,3 +165,26 @@ class AddRatingView(APIView):
         else:
             return Response(status=400)
 
+
+class ProfitView(viewsets.ViewSet):
+    def get(self, request):
+        date_start = request.data['date_start']
+        date_end = request.data['date_end']
+        serializers = ProfitSerializer(data={'date_start': date_start, 'date_end': date_end})
+        serializers.is_valid()
+        dessert_list = Desserts.objects.filter(created_at__gte=date_start, created_at__lte=date_end)
+        profit = []
+        for i in dessert_list:
+            price_dessert = i.price
+            price_food = sum([int(j.price) for j in i.ing_food.all()])
+            price_add = sum([int(j.price) for j in i.ing_add.all()])
+            if i.decor:
+                price_decor_food = 0
+                price_decor_add = 0
+                if i.decor.ing_food:
+                    price_decor_food = int(i.decor.ing_food.price)
+                if i.decor.ing_add:
+                    price_decor_add = int(i.decor.ing_add.price)
+                price_decor = price_decor_food + price_decor_add
+            profit.append(price_dessert - price_food - price_add - price_decor)
+        return Response(sum(profit))
