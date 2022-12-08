@@ -20,7 +20,7 @@ class StorageFood(models.Model):
 
 
 class StorageAdditions(models.Model):
-    """модель склада дополнений"""
+    """Модель склада дополнений"""
     name = models.CharField(max_length=50, verbose_name='Наименование')
     amount = models.IntegerField(verbose_name='Количество')
     unit_measure = models.CharField(max_length=10, verbose_name='Единица измерения')
@@ -89,10 +89,12 @@ class Decor(models.Model):
 
     def save(self, *args, **kwargs):
         """Вычитание из склада продуктов и дополнений ингредиентов"""
-        self.ing_food.name_food.amount -= self.ing_food.amount
-        self.ing_food.name_food.save()
-        self.ing_add.name_addition.amount -= self.ing_add.amount
-        self.ing_add.name_addition.save()
+        if self.ing_food:
+            self.ing_food.name_food.amount -= self.ing_food.amount
+            self.ing_food.name_food.save()
+        if self.ing_add:
+            self.ing_add.name_addition.amount -= self.ing_add.amount
+            self.ing_add.name_addition.save()
         super().save(*args, **kwargs)
 
     class Meta:

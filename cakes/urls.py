@@ -20,10 +20,10 @@ urlpatterns = [
     path('decors/<int:pk>/comments/', views.comments_decor),
     path('orders/', views.OrdersCreateView.as_view()),
     path('ingfood/', views.IngredientsFoodListView.as_view(), name='ingfood'),
-    path('ingadditions/', views.IngredientsAdditionsListView.as_view()),
+    path('ingadditions/', views.IngredientsAdditionsListView.as_view(), name='ingadditions'),
     path('profit/', views.ProfitView.as_view({'get': 'get'})),
 
-    path('dj-rest-auth/google/', views.GoogleLogin.as_view(), name='google_login'),
+    #path('dj-rest-auth/google/', views.GoogleLogin.as_view(), name='google_login'),
 ]
 
 if settings.DEBUG:

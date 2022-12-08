@@ -150,7 +150,7 @@ class DecorAdmin(admin.ModelAdmin):
     list_display = ('name', 'price', 'get_cost_price_decor', 'get_revenue_decors', 'get_html_photo')
     fields = ('name', ('price', 'get_cost_price_decor', 'get_revenue_decors'), 'ing_food', 'ing_add', 'image', 'is_active', 'created_at')
     inlines = (AdditionalImageAdmin,  CommentDecorInlineAdmin)
-    readonly_fields = ('get_cost_price_decor', )
+    readonly_fields = ('get_cost_price_decor', 'get_revenue_decors', 'get_html_photo')
     search_fields = ('name', 'price')
     list_filter = (PriceDecorsListFilter, )
     save_on_top = True

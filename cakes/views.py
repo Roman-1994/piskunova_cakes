@@ -33,14 +33,14 @@ class StorageFoodListCreateView(generics.ListCreateAPIView):
     """Вывод списка продуктов"""
     queryset = StorageFood.objects.all()
     serializer_class = StorageFoodSerializer
-    #permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
 
 
 class StorageAdditionsListCreateView(generics.ListCreateAPIView):
     """Вывод списка дополнений"""
     queryset = StorageAdditions.objects.all()
     serializer_class = StorageAdditionsSerializer
-    #permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
 
 
 class DessertsListView(generics.ListAPIView):
@@ -188,3 +188,4 @@ class ProfitView(viewsets.ViewSet):
                 price_decor = price_decor_food + price_decor_add
             profit.append(price_dessert - price_food - price_add - price_decor)
         return Response(sum(profit))
+
